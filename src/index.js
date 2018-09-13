@@ -1,52 +1,51 @@
-module.exports = function check(str, bracketsConfig) {
-  var steck = [];
-  var openSim = [];
-  var closeSim = [];
-  var n = str.length;
-  var col=n/2;
-  if (str == '|()|(||)||')  return true;
-  if (str == '111115611111111222288888822225577877778775555666677777777776622222' ) return true;
-  if (str == '8888877878887777777888888887777777887887788788887887777777788888888887788888') return false;
-  if (str == '([[[[(({{{}}}(([](((((((())))||||||))))[[{{|{{}}|}}[[[[]]]]{{{{{}}}}}]]))))]]]])(())') return true;
- 
-  for (var i=0; i < bracketsConfig.length; i++) {
-     openSim.push(bracketsConfig[i][0]);
-     closeSim.push(bracketsConfig[i][1]);
+module.exports = function check(str, symbolConfig) {
+  const arrayStack = [];
+
+  for (let i = 0; i < str.length; i++) {
+      const symbol = str[i];
+      const last = arrayStack[arrayStack.length - 1];
+      
+      if(!last) {
+        arrayStack.push(symbol);
+        continue;
+      }
+
+      const closedSymbol = closed(symbol, symbolConfig);
+      const openedSymbol = opened(symbol, symbolConfig);
+      const opposite = getOpposite(symbol, symbolConfig);
+
+      if (opposite === symbol && last === symbol) {
+        arrayStack.pop();
+        continue;
+      }
+
+      if (openedSymbol) {
+        arrayStack.push(symbol);
+        continue;
+      }
+
+      if (closedSymbol) {
+        if (getOpposite(last, symbolConfig) !== symbol) {
+          return false;
+        } else {
+          arrayStack.pop();
+            continue;
+          }
+      }
   }
+  return arrayStack.length === 0;
+}
 
-  
-  for (var i=0; i < str.length; i++) {
-  	var g = str.charAt(i);
-  	if ( openSim.indexOf(g) > -1) {
-  		steck.push(g);
-  	}  else if ( closeSim.indexOf(g) == openSim.indexOf(steck[steck.length-1])) {
-  		steck.pop();
-  		col-- }  
-  }
-  
- 
-  // var count={}, res=0, q;
+function opened(element, symbolConfig) {
+  return symbolConfig.some(pair => pair[0] === element);
+}
 
-  // for (q=0; q< steck.length; ++q) {
-  //   count[steck[q]] = ~~count[steck[q]] + 1;
-  // }
+function closed(element, symbolConfig) {
+  return symbolConfig.some(pair => pair[1] === element);
+}
 
-  // for (q in count) {
-  //   if (count.hasOwnProperty(q) && count[q] > 1) {
-  //     res += count[q];
-  //   }
-  // }
-
-  
-
-
-
-  if (col == 0) { return true;}
-     else  if ( steck.length % 2 == 0 ) { return true;}
-      else { return false;}
-  
-    
-
-  
-  // your solution
+function getOpposite(element, symbolConfig) {
+  const first = symbolConfig.find(config => config[0] === element);
+  const second = symbolConfig.find(config => config[1] === element);
+  return (first && first[1]) || (second && second[0]);
 }
